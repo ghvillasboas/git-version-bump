@@ -50,6 +50,9 @@ namespace :v do
 		task :show  => "version:bump:show"
 		task :sh    => "version:bump:show"
 		task :s     => "version:bump:show"
-		task :c     => "version:bump:codename"
+
+		task :codename  => "version:bump:codename"
+		task :cn     	=> "version:bump:codename"
+		task :c     	=> "version:bump:codename"
 	end
 end

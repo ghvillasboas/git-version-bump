@@ -1,9 +1,42 @@
 require 'tempfile'
 require 'digest/sha1'
 require 'pathname'
+require 'haikunator'
 
 module GitVersionBump
 	class VersionUnobtainable < StandardError; end
+
+	def self.codename
+
+		file_path = Dir.glob("lib/**/version.rb").last
+		versions = File.read(file_path).split("\n")
+		codename_index = versions.find_index { |e| e.match( /CODENAME/ ) }
+
+		input = versions[codename_index]
+		input_hash = Hash[*input.gsub(/"/,"").split(/\s*[\n=]\s*/)]
+
+		input_hash["\tCODENAME"]
+	end
+
+	def self.codename_version(codename = '')
+		codename = GVB.titleize(Haikunator.haikunate(0, ' ')) unless codename != ''
+
+		file_path = Dir.glob("lib/**/version.rb").last
+		
+  		versions = File.read(file_path).split("\n")
+  		codename_index = versions.find_index { |e| e.match( /CODENAME/ ) }
+  		new_codename_entry = "\tCODENAME = \"#{codename}\""
+
+  		if codename_index
+  			versions[codename_index] = new_codename_entry
+  		else
+  			versions.insert(versions.size-1, new_codename_entry)
+  		end
+
+  		# To write changes to the file, use:
+  		File.open(file_path, "w") {|file| file.puts versions.join("\n") }
+
+	end
 
 	def self.version(use_local_git=false)
 		if use_local_git
@@ -300,6 +333,10 @@ module GitVersionBump
 				      "GVB.version(#{use_local_git.inspect}) failed; perhaps you need to install git?"
 			end
 		end
+	end
+
+	def self.titleize(string_to_titleize)
+	    string_to_titleize.split(' ').map { |words| words.capitalize }.join(' ')
 	end
 end
 
